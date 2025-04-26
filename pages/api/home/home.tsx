@@ -34,11 +34,11 @@ import { Prompt } from '@/types/prompt';
 import { Chat } from '@/components/Chat/Chat';
 import { Chatbar } from '@/components/Chatbar/Chatbar';
 import { Navbar } from '@/components/Mobile/Navbar';
-import Promptbar from '@/components/Promptbar';
+//import Promptbar from '@/components/Promptbar';
 
 import HomeContext from './home.context';
 import { HomeInitialState, initialState } from './home.state';
-
+import { SignOutButton } from '@/components/Buttons/SignOutButton';
 import { v4 as uuidv4 } from 'uuid';
 
 interface Props {
@@ -229,7 +229,7 @@ const Home = ({ defaultModelId }: Props) => {
 
     if (window.innerWidth < 640) {
       dispatch({ field: 'showChatbar', value: false });
-      dispatch({ field: 'showPromptbar', value: false });
+      //dispatch({ field: 'showPromptbar', value: false });
     }
 
     const showChatbar = localStorage.getItem('showChatbar');
@@ -237,10 +237,10 @@ const Home = ({ defaultModelId }: Props) => {
       dispatch({ field: 'showChatbar', value: showChatbar === 'true' });
     }
 
-    const showPromptbar = localStorage.getItem('showPromptbar');
+    /*const showPromptbar = localStorage.getItem('showPromptbar');
     if (showPromptbar) {
       dispatch({ field: 'showPromptbar', value: showPromptbar === 'true' });
-    }
+    }*/
 
     const folders = localStorage.getItem('folders');
     if (folders) {
@@ -317,6 +317,7 @@ const Home = ({ defaultModelId }: Props) => {
         <main
           className={`flex h-screen w-screen flex-col text-sm text-white dark:text-white ${lightMode}`}
         >
+          <SignOutButton />
           <div className="fixed top-0 w-full sm:hidden">
             <Navbar
               selectedConversation={selectedConversation}
@@ -331,7 +332,7 @@ const Home = ({ defaultModelId }: Props) => {
               <Chat stopConversationRef={stopConversationRef} />
             </div>
 
-            <Promptbar />
+            {/* <Promptbar /> */}
           </div>
         </main>
       )}
@@ -352,7 +353,7 @@ export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
         'chat',
         'sidebar',
         'markdown',
-        'promptbar',
+        //'promptbar',
         'settings',
       ])),
     },
