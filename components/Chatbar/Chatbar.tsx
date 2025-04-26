@@ -49,17 +49,24 @@ export const Chatbar = () => {
     exportData();
   };
 
-  const handleImportConversations = (data: SupportedExportFormats) => {
-    const { history, folders, prompts }: LatestExportFormat = importData(data);
-    homeDispatch({ field: 'conversations', value: history });
-    homeDispatch({
-      field: 'selectedConversation',
-      value: history[history.length - 1],
-    });
-    homeDispatch({ field: 'folders', value: folders });
-    homeDispatch({ field: 'prompts', value: prompts });
-
-    window.location.reload();
+  const handleImportConversations = async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+  
+    // Replace this URL with the document processor endpoint
+    const processorUrl = 'http://document-processor-service/upload';
+  
+    try {
+      const response = await fetch(processorUrl, {
+        method: 'POST',
+        body: formData,
+      });
+      const result = await response.json();
+      console.log('Document processed:', result);
+      // You can now update the state or dispatch actions based on the result
+    } catch (error) {
+      console.error('Upload error:', error);
+    }
   };
 
   const handleClearConversations = () => {

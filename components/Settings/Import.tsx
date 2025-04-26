@@ -6,12 +6,13 @@ import { useTranslation } from 'next-i18next';
 import { SupportedExportFormats } from '@/types/export';
 
 import { SidebarButton } from '../Sidebar/SidebarButton';
+import { on } from 'events';
 
 interface Props {
-  onImport: (data: SupportedExportFormats) => void;
+  onUpload: (data: File) => void;
 }
 
-export const Import: FC<Props> = ({ onImport }) => {
+export const Import: FC<Props> = ({ onUpload }) => {
   const { t } = useTranslation('sidebar');
   return (
     <>
@@ -20,22 +21,17 @@ export const Import: FC<Props> = ({ onImport }) => {
         className="sr-only"
         tabIndex={-1}
         type="file"
-        accept=".json"
+        accept=".doc,.docx,.pdf,.txt,.json"
         onChange={(e) => {
           if (!e.target.files?.length) return;
 
           const file = e.target.files[0];
-          const reader = new FileReader();
-          reader.onload = (e) => {
-            let json = JSON.parse(e.target?.result as string);
-            onImport(json);
-          };
-          reader.readAsText(file);
+          onUpload(file);
         }}
       />
 
       <SidebarButton
-        text={t('Import data')}
+        text={t('Upload Document')}
         icon={<IconFileImport size={18} />}
         onClick={() => {
           const importFile = document.querySelector(
