@@ -31,10 +31,10 @@ export const OllamaStream = async (
   try {
     const res = await fetch(url, {
       headers: {
-        'Accept': 'application/json',
+        'Accept': useStream? 'text/event_stream':'application/json',
         'Content-Type': 'application/json',
         'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache',
+        'Connection': 'keep-alive',
       },
       method: 'POST',
       body: JSON.stringify({
