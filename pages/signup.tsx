@@ -41,23 +41,40 @@ export default function SignupPage() {
       >
         <h2 className="text-2xl font-bold text-center text-green-600 mb-4">Sign Up</h2>
         {error && <p className="text-red-500 text-center mb-3">{error}</p>}
+
         {["name","email","password","confirmPassword"].map(field => (
           <div key={field} className="mb-4">
-            <label htmlFor={field} className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-200">
+            <label
+              htmlFor={field}
+              className="block text-sm font-medium mb-1 text-gray-700 dark:text-gray-200"
+            >
               {field === "confirmPassword" ? "Confirm Password" : field.charAt(0).toUpperCase() + field.slice(1)}
             </label>
             <input
               id={field}
               name={field}
-              type={field.includes("password")?"password":field==="email"?"email":"text"}
+              type={
+                field === "password" || field === "confirmPassword"
+                  ? "password"
+                  : field === "email"
+                  ? "email"
+                  : "text"
+              }
               value={form[field as keyof typeof form]}
               onChange={handleChange}
               required
               className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded focus:outline-none focus:ring focus:border-blue-400 dark:bg-[#40414F] dark:text-white"
-              placeholder={`Enter your ${field==="confirmPassword"?"password again":field}`}
+              placeholder={
+                field === "password" || field === "confirmPassword"
+                  ? "••••••••"
+                  : field === "email"
+                  ? "you@example.com"
+                  : `Enter your ${field}`
+              }
             />
           </div>
         ))}
+
         <button
           type="submit"
           disabled={loading}
@@ -65,9 +82,12 @@ export default function SignupPage() {
         >
           {loading ? "Creating account..." : "Create Account"}
         </button>
+
         <p className="text-sm text-center mt-4 text-gray-600 dark:text-gray-400">
           Already have an account?{" "}
-          <a href="/signin" className="text-green-600 hover:underline">Log in here</a>
+          <a href="/signin" className="text-green-600 hover:underline">
+            Log in here
+          </a>
         </p>
       </form>
     </div>

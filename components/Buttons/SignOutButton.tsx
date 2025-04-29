@@ -1,15 +1,13 @@
 import { IconLogout } from '@tabler/icons-react';
 import { useRouter } from 'next/router';
 import React from 'react';
+import { signOut } from 'next-auth/react';
 
 export const SignOutButton: React.FC = () => {
   const router = useRouter();
 
   const handleSignOut = () => {
-    // Clear any authentication tokens or user info here:
-    localStorage.removeItem('authToken');
-    // Redirect to the login or landing page:
-    router.push('/');
+    signOut({ callbackUrl: '/signin' });
   };
 
   return (

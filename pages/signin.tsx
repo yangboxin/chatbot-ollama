@@ -20,7 +20,7 @@ export default function SignInPage() {
     setLoading(true);
 
     const res = await signIn("credentials", {
-      redirect: false,
+      redirect: true,
       email: form.email,
       password: form.password,
       callbackUrl: "/",
