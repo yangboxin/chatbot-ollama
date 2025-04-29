@@ -27,7 +27,7 @@ export const OllamaStream = async (
   // Create an AbortController with a long timeout
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), API_TIMEOUT_DURATION);
-  
+  const useStream = process.env.OLLAMA_STREAM === 'true';
   try {
     const res = await fetch(url, {
       headers: {
@@ -40,7 +40,7 @@ export const OllamaStream = async (
       body: JSON.stringify({
         model: model,
         prompt: prompt,
-        stream: true,
+        stream: useStream,
         /*system: systemPrompt,
         options: {
           temperature: temperature,
