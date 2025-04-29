@@ -53,11 +53,10 @@ export const Chatbar = () => {
     const formData = new FormData();
     formData.append('file', file);
   
-    // Replace this URL with the document processor endpoint
-    const processorUrl = 'http://document-processor-service/upload';
-  
+    const processorUrl = process.env.DOCUMENT_PROCESSOR_URL;
+    const url = `${processorUrl}/process`;
     try {
-      const response = await fetch(processorUrl, {
+      const response = await fetch(url, {
         method: 'POST',
         body: formData,
       });

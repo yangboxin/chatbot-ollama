@@ -40,13 +40,15 @@ export const OllamaStream = async (
       body: JSON.stringify({
         model: model,
         prompt: prompt,
-        system: systemPrompt,
+        stream: true,
+        /*system: systemPrompt,
         options: {
           temperature: temperature,
-        },
+        },*/
       }),
       signal: controller.signal,
     });
+    // console.log(res);
     
     // Clear the timeout since the request has completed
     clearTimeout(timeoutId);
