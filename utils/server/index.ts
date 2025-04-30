@@ -69,27 +69,32 @@ export const OllamaStream = async (
       async start(controller) {
         let buffer = '';
         for await (const chunk of res.body as any) {
-          // Decode and accumulate the data
+          // Decode and accumulate data
           buffer += decoder.decode(chunk, { stream: true });
           const lines = buffer.split('\n');
-          // Process all complete lines, keep last partial line in buffer
+          // Keep last partial line in buffer
           buffer = lines.pop() || '';
           for (const line of lines) {
             const trimmed = line.trim();
             if (!trimmed) continue;
             try {
               const json = JSON.parse(trimmed);
-              // Optionally check if done; if done, then close the stream
+              // If done, close stream
               if (json.done === true) {
                 controller.close();
                 return;
               }
-              // Enqueue each response chunk
+              // If there's a response, split it into words and enqueue each with a delay
               if (json.response) {
-                controller.enqueue(encoder.encode(json.response));
+                const words = json.response.match(/(\S+|\s+)/g) || [];
+                for (const word of words) {
+                  if (word) {
+                    await new Promise(resolve => setTimeout(resolve, 10));
+                    controller.enqueue(encoder.encode(word + ' '));
+                  }
+                }
               }
             } catch (err) {
-              // If parsing fails, optionally log and continue
               console.error('Failed to parse JSON chunk:', err);
             }
           }
@@ -99,7 +104,13 @@ export const OllamaStream = async (
           try {
             const json = JSON.parse(buffer.trim());
             if (json.response) {
-              controller.enqueue(encoder.encode(json.response));
+              const tokens = json.response.match(/(\S+|\s+)/g) || [];
+              for (const token of tokens) {
+                if (token) {
+                  await new Promise(resolve => setTimeout(resolve, 10));
+                  controller.enqueue(encoder.encode(token + ' '));
+                }
+              }
             }
           } catch (err) {
             console.error('Failed to parse final JSON chunk:', err);
