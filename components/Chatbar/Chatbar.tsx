@@ -54,10 +54,14 @@ export const Chatbar = () => {
     formData.append('file', file);
   
     const processorUrl = process.env.DOCUMENT_PROCESSOR_URL;
-    const url = `${processorUrl}/process`;
+    const id = uuidv4();
+    const url = '${processorUrl}/process/${id}';
     try {
       const response = await fetch(url, {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/pdf',
+        },
         body: formData,
       });
       const result = await response.json();
