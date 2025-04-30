@@ -90,7 +90,7 @@ export const OllamaStream = async (
                 for (const word of words) {
                   if (word) {
                     await new Promise(resolve => setTimeout(resolve, 10));
-                    controller.enqueue(encoder.encode(word + ' '));
+                    controller.enqueue(encoder.encode(word));
                   }
                 }
               }
@@ -108,7 +108,7 @@ export const OllamaStream = async (
               for (const token of tokens) {
                 if (token) {
                   await new Promise(resolve => setTimeout(resolve, 10));
-                  controller.enqueue(encoder.encode(token + ' '));
+                  controller.enqueue(encoder.encode(token));
                 }
               }
             }
