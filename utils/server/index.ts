@@ -41,10 +41,10 @@ export const OllamaStream = async (
         model: model,
         prompt: prompt,
         stream: useStream,
-        /*system: systemPrompt,
+        system: systemPrompt,
         options: {
           temperature: temperature,
-        },*/
+        },
       }),
       signal: controller.signal,
     });
@@ -67,19 +67,45 @@ export const OllamaStream = async (
 
     const responseStream = new ReadableStream({
       async start(controller) {
-        try {
-          for await (const chunk of res.body as any) {
-            const text = decoder.decode(chunk); 
-            let parsedData = { response: '' };
-            try { parsedData = JSON.parse(text); } catch { }
-            if (parsedData.response) {
-              controller.enqueue(encoder.encode(parsedData.response)); 
+        let buffer = '';
+        for await (const chunk of res.body as any) {
+          // Decode and accumulate the data
+          buffer += decoder.decode(chunk, { stream: true });
+          const lines = buffer.split('\n');
+          // Process all complete lines, keep last partial line in buffer
+          buffer = lines.pop() || '';
+          for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed) continue;
+            try {
+              const json = JSON.parse(trimmed);
+              // Optionally check if done; if done, then close the stream
+              if (json.done === true) {
+                controller.close();
+                return;
+              }
+              // Enqueue each response chunk
+              if (json.response) {
+                controller.enqueue(encoder.encode(json.response));
+              }
+            } catch (err) {
+              // If parsing fails, optionally log and continue
+              console.error('Failed to parse JSON chunk:', err);
             }
           }
-          controller.close();
-        } catch (e) {
-          controller.error(e);
         }
+        // Process any remaining buffered text
+        if (buffer.trim()) {
+          try {
+            const json = JSON.parse(buffer.trim());
+            if (json.response) {
+              controller.enqueue(encoder.encode(json.response));
+            }
+          } catch (err) {
+            console.error('Failed to parse final JSON chunk:', err);
+          }
+        }
+        controller.close();
       },
     });
     
