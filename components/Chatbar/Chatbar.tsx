@@ -49,7 +49,7 @@ export const Chatbar = () => {
     exportData();
   };
 
-  const handleImportConversations = async (file: File) => {
+  /*const handleImportConversations = async (file: File) => {
     const formData = new FormData();
     formData.append('file', file);
   
@@ -66,7 +66,7 @@ export const Chatbar = () => {
     } catch (error) {
       console.error('Upload error:', error);
     }
-  };
+  };*/
 
   const handleClearConversations = () => {
     defaultModelId &&
@@ -169,7 +169,7 @@ export const Chatbar = () => {
         ...chatBarContextValue,
         handleDeleteConversation,
         handleClearConversations,
-        handleImportConversations,
+        //handleImportConversations,
         handleExportData,
       }}
     >

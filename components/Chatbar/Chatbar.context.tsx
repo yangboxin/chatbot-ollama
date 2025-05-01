@@ -13,7 +13,7 @@ export interface ChatbarContextProps {
   handleDeleteConversation: (conversation: Conversation) => void;
   handleClearConversations: () => void;
   handleExportData: () => void;
-  handleImportConversations: (data: File) => void;
+  // handleImportConversations: (data: File) => void;
 }
 
 const ChatbarContext = createContext<ChatbarContextProps>(undefined!);

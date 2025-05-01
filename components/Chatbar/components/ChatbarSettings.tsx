@@ -26,7 +26,7 @@ export const ChatbarSettings = () => {
 
   const {
     handleClearConversations,
-    handleImportConversations,
+    //handleImportConversations,
     handleExportData,
   } = useContext(ChatbarContext);
 
@@ -36,7 +36,7 @@ export const ChatbarSettings = () => {
         <ClearConversations onClearConversations={handleClearConversations} />
       ) : null}
 
-      <Import onUpload={handleImportConversations} />
+      {/*<Import onUpload={handleImportConversations} />*/}
 
       <SidebarButton
         text={t('Export data')}

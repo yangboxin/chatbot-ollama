@@ -4,6 +4,8 @@ import {
   IconPlayerStop,
   IconRepeat,
   IconSend,
+  IconCheck,
+  IconFile,
 } from '@tabler/icons-react';
 import {
   KeyboardEvent,
@@ -14,6 +16,8 @@ import {
   useRef,
   useState,
 } from 'react';
+
+import { v4 as uuidv4 } from 'uuid';
 
 import { useTranslation } from 'next-i18next';
 
@@ -50,6 +54,12 @@ export const ChatInput = ({
     dispatch: homeDispatch,
   } = useContext(HomeContext);
 
+  // upload progress state
+  const [uploading, setUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
+  const [success, setSuccess] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const handleFileClick = () => fileInputRef.current?.click();
   const [content, setContent] = useState<string>();
   const [isTyping, setIsTyping] = useState<boolean>(false);
   const [showPromptList, setShowPromptList] = useState(false);
@@ -59,6 +69,40 @@ export const ChatInput = ({
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   const promptListRef = useRef<HTMLUListElement | null>(null);
+
+  // handle file upload + fake progress + API call
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    setProgress(0);
+    const timer = setInterval(() => {
+      setProgress(p => Math.min(p + Math.random() * 20, 90));
+    }, 200);
+    try {
+      const form = new FormData();
+      form.append('file', file);
+      const id = uuidv4();
+      const res = await fetch(`/api/process/${id}`, {
+        method: 'POST',
+        body: form,
+      });
+      clearInterval(timer);
+      setProgress(100);
+      if (res.ok) setSuccess(true);
+      else throw new Error(`Upload failed ${res.status}`);
+    } catch (err) {
+      clearInterval(timer);
+      console.error(err);
+      setProgress(0);
+    } finally {
+      setUploading(false);
+      setTimeout(() => {
+        setProgress(0);
+        setSuccess(false);
+      }, 2000);
+    }
+  };
 
   const filteredPrompts = prompts.filter((prompt) =>
     prompt.name.toLowerCase().includes(promptInputValue.toLowerCase()),
@@ -239,116 +283,92 @@ export const ChatInput = ({
   }, []);
 
   return (
-    <div className="absolute bottom-0 left-0 w-full border-transparent bg-gradient-to-b from-transparent via-white to-white pt-6 dark:border-white/20 dark:via-[#343541] dark:to-[#343541] md:pt-2">
-      <div className="stretch mx-2 mt-4 flex flex-row gap-3 last:mb-2 md:mx-4 md:mt-[52px] md:last:mb-6 lg:mx-auto lg:max-w-3xl">
-        {messageIsStreaming && (
-          <button
-            className="absolute top-0 left-0 right-0 mx-auto mb-3 flex w-fit items-center gap-3 rounded-md border border-neutral-200 bg-white py-2 px-4 text-black hover:bg-neutral-100 transition-colors duration-200 shadow-sm dark:border-neutral-600 dark:bg-[#343541] dark:text-white dark:hover:bg-[#424554] md:mb-0 md:mt-2"
-            onClick={handleStopConversation}
-          >
-            <IconPlayerStop size={16} stroke={2} /> {t('Stop Generating')}
-          </button>
-        )}
-
-        {!messageIsStreaming &&
-          selectedConversation &&
-          selectedConversation.messages.length > 0 && (
+    <>
+      <div className="absolute bottom-0 left-0 w-full border-transparent bg-gradient-to-b from-transparent via-white to-white pt-6 dark:border-white/20 dark:via-[#343541] dark:to-[#343541] md:pt-2">
+        <div className="stretch mx-2 mt-4 flex flex-row gap-3 last:mb-2 md:mx-4 md:mt-[52px] md:last:mb-6 lg:mx-auto lg:max-w-3xl">
+          {messageIsStreaming && (
             <button
               className="absolute top-0 left-0 right-0 mx-auto mb-3 flex w-fit items-center gap-3 rounded-md border border-neutral-200 bg-white py-2 px-4 text-black hover:bg-neutral-100 transition-colors duration-200 shadow-sm dark:border-neutral-600 dark:bg-[#343541] dark:text-white dark:hover:bg-[#424554] md:mb-0 md:mt-2"
-              onClick={onRegenerate}
+              onClick={handleStopConversation}
             >
-              <IconRepeat size={16} stroke={2} /> {t('Regenerate response')}
+              <IconPlayerStop size={16} stroke={2} /> {t('Stop Generating')}
             </button>
           )}
 
-        <div className="relative mx-2 flex w-full flex-grow flex-col rounded-xl border border-black/10 bg-white shadow-[0_2px_12px_rgba(0,0,0,0.08)] dark:border-gray-900/50 dark:bg-[#40414F] dark:text-white dark:shadow-[0_2px_12px_rgba(0,0,0,0.16)] sm:mx-4">
-          <div
-            className="absolute left-2 top-2 rounded-md p-1.5 text-neutral-800 opacity-60 dark:text-neutral-100"
-          >
-            <IconBolt size={20} stroke={1.5} />
-          </div>
-          <textarea
-            ref={textareaRef}
-            className="m-0 w-full resize-none border-0 bg-transparent p-0 py-2 pr-8 pl-10 text-black dark:bg-transparent dark:text-white md:py-3 md:pl-10"
-            style={{
-              resize: 'none',
-              bottom: `${textareaRef?.current?.scrollHeight}px`,
-              maxHeight: '400px',
-              overflow: `${
-                textareaRef.current && textareaRef.current.scrollHeight > 400
-                  ? 'auto'
-                  : 'hidden'
-              }`,
-            }}
-            placeholder={
-              t('Type a message or type "/" to select a prompt...') || ''
-            }
-            value={content}
-            rows={1}
-            onCompositionStart={() => setIsTyping(true)}
-            onCompositionEnd={() => setIsTyping(false)}
-            onChange={handleChange}
-            onKeyDown={handleKeyDown}
-          />
-
-          <button
-            className="absolute right-2 top-2 rounded-md p-1.5 text-neutral-800 opacity-60 hover:bg-neutral-200 hover:text-neutral-900 transition-colors duration-200 dark:text-neutral-100 dark:hover:bg-neutral-600 dark:hover:text-neutral-200"
-            onClick={handleSend}
-          >
-            {messageIsStreaming ? (
-              <div className="h-4 w-4 animate-spin rounded-full border-t-2 border-neutral-800 opacity-60 dark:border-neutral-100"></div>
-            ) : (
-              <IconSend size={18} stroke={1.5} />
-            )}
-          </button>
-
-          {showScrollDownButton && (
-            <div className="absolute bottom-12 right-0 lg:bottom-0 lg:-right-10">
+          {!messageIsStreaming &&
+            selectedConversation &&
+            selectedConversation.messages.length > 0 && (
               <button
-                className="flex h-8 w-8 items-center justify-center rounded-full bg-neutral-200 text-gray-800 shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-neutral-200 transition-all duration-200 hover:bg-neutral-300 dark:hover:bg-gray-600"
-                onClick={onScrollDownClick}
+                className="absolute top-0 left-0 right-0 mx-auto mb-3 flex w-fit items-center gap-3 rounded-md border border-neutral-200 bg-white py-2 px-4 text-black hover:bg-neutral-100 transition-colors duration-200 shadow-sm dark:border-neutral-600 dark:bg-[#343541] dark:text-white dark:hover:bg-[#424554] md:mb-0 md:mt-2"
+                onClick={onRegenerate}
               >
-                <IconArrowDown size={18} stroke={1.5} />
+                <IconRepeat size={16} stroke={2} /> {t('Regenerate response')}
               </button>
-            </div>
-          )}
+            )}
 
-          {showPromptList && filteredPrompts.length > 0 && (
-            <div className="absolute bottom-12 w-full">
-              <PromptList
-                activePromptIndex={activePromptIndex}
-                prompts={filteredPrompts}
-                onSelect={handleInitModal}
-                onMouseOver={setActivePromptIndex}
-                promptListRef={promptListRef}
-              />
-            </div>
-          )}
-
-          {isModalVisible && (
-            <VariableModal
-              prompt={filteredPrompts[activePromptIndex]}
-              variables={variables}
-              onSubmit={handleSubmit}
-              onClose={() => setIsModalVisible(false)}
+          {/* 合并上传按钮与输入框到这一处 */}
+          <div className="relative mx-2 flex w-full items-center space-x-2 rounded-xl border border-black/10 bg-white p-2 shadow-sm dark:border-gray-900/50 dark:bg-[#40414F] dark:text-white sm:mx-4">
+            {/* 隐藏文件输入 & 上传按钮 */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="application/pdf"
+              className="hidden"
+              onChange={handleFileChange}
             />
+            <button onClick={handleFileClick} className="p-1 text-gray-500 hover:text-gray-400">
+              <IconFile size={20} />
+            </button>
+            {/* 上传进度 or ✅ */}
+            {uploading && (
+              <div className="relative w-6 h-6">
+                <svg className="animate-spin w-6 h-6 text-blue-400" viewBox="0 0 24 24">
+                  {/* ...spinner path... */}
+                </svg>
+                <span className="absolute inset-0 flex items-center justify-center text-xs">
+                  {Math.round(progress)}%
+                </span>
+              </div>
+            )}
+            {success && <IconCheck size={20} className="text-green-400" />}
+
+            {/* 聊天输入框 */}
+            <textarea
+              ref={textareaRef}
+              className="flex-1 resize-none border-0 bg-transparent p-0 py-2 pr-8 pl-10 text-black dark:bg-transparent dark:text-white"
+              placeholder={t('Type a message…') || ''}
+              value={content}
+              rows={1}
+              onCompositionStart={() => setIsTyping(true)}
+              onCompositionEnd={() => setIsTyping(false)}
+              onChange={handleChange}
+              onKeyDown={handleKeyDown}
+            />
+            {/* 发送按钮 */}
+            <button onClick={handleSend} className="p-1 text-neutral-800 dark:text-neutral-100">
+              {messageIsStreaming ? (
+                <div className="h-4 w-4 animate-spin rounded-full border-t-2 border-neutral-800 dark:border-neutral-100"></div>
+              ) : (
+                <IconSend size={18} stroke={1.5} />
+              )}
+            </button>
+          </div>
+        </div>
+        <div className="px-3 pt-2 pb-3 text-center text-[12px] text-black/50 dark:text-white/50 md:px-4 md:pt-3 md:pb-6">
+          <a
+            href="https://github.com/ivanfioravanti/chatbot-ollama"
+            target="_blank"
+            rel="noreferrer"
+            className="underline hover:text-black/70 dark:hover:text-white/70 transition-colors duration-200"
+          >
+            dRAGon
+          </a>
+          .{' '}
+          {t(
+            "dRAGon is a free and open-source project. It's not affiliated with OpenAI, Microsoft, or any other company.",
           )}
         </div>
       </div>
-      <div className="px-3 pt-2 pb-3 text-center text-[12px] text-black/50 dark:text-white/50 md:px-4 md:pt-3 md:pb-6">
-        <a
-          href="https://github.com/ivanfioravanti/chatbot-ollama"
-          target="_blank"
-          rel="noreferrer"
-          className="underline hover:text-black/70 dark:hover:text-white/70 transition-colors duration-200"
-        >
-          dRAGon
-        </a>
-        .{' '}
-        {t(
-          "dRAGon is a free and open-source project. It's not affiliated with OpenAI, Microsoft, or any other company.",
-        )}
-      </div>
-    </div>
+    </>
   );
 };
