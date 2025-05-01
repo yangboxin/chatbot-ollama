@@ -342,11 +342,11 @@ export const ChatInput = ({
           rel="noreferrer"
           className="underline hover:text-black/70 dark:hover:text-white/70 transition-colors duration-200"
         >
-          Chatbot Ollama
+          dRAGon
         </a>
         .{' '}
         {t(
-          "Chatbot Ollama is an advanced chatbot kit for Ollama models aiming to mimic ChatGPT's interface and functionality.",
+          "dRAGon is a free and open-source project. It's not affiliated with OpenAI, Microsoft, or any other company.",
         )}
       </div>
     </div>

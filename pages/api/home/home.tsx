@@ -305,13 +305,13 @@ const Home = ({ defaultModelId }: Props) => {
       }}
     >
       <Head>
-        <title>Chatbot Ollama</title>
+        <title>dRAGon</title>
         <meta name="description" content="ChatGPT but local." />
         <meta
           name="viewport"
           content="height=device-height ,width=device-width, initial-scale=1, user-scalable=no"
         />
-        <link rel="icon" href="/favicon.png" />
+        <link rel="icon" href="/ragicon.png" />
       </Head>
       {selectedConversation && (
         <main
