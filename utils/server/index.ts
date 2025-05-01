@@ -48,7 +48,6 @@ export const OllamaStream = async (
       }),
       signal: controller.signal,
     });
-    // console.log(res);
     
     // Clear the timeout since the request has completed
     clearTimeout(timeoutId);

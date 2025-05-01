@@ -55,7 +55,7 @@ export const Chatbar = () => {
   
     const processorUrl = process.env.DOCUMENT_PROCESSOR_URL;
     const id = uuidv4();
-    const url = '${processorUrl}/process/${id}';
+    const url = `${processorUrl}/process/${id}`;
     try {
       const response = await fetch(url, {
         method: 'POST',
