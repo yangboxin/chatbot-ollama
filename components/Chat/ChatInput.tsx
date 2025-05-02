@@ -306,9 +306,8 @@ export const ChatInput = ({
               </button>
             )}
 
-          {/* 合并上传按钮与输入框到这一处 */}
+ 
           <div className="relative mx-2 flex w-full items-center space-x-2 rounded-xl border border-black/10 bg-white p-2 shadow-sm dark:border-gray-900/50 dark:bg-[#40414F] dark:text-white sm:mx-4">
-            {/* 隐藏文件输入 & 上传按钮 */}
             <input
               ref={fileInputRef}
               type="file"
@@ -319,7 +318,6 @@ export const ChatInput = ({
             <button onClick={handleFileClick} className="p-1 text-gray-500 hover:text-gray-400">
               <IconFile size={20} />
             </button>
-            {/* 上传进度 or ✅ */}
             {uploading && (
               <div className="relative w-6 h-6">
                 <svg className="animate-spin w-6 h-6 text-blue-400" viewBox="0 0 24 24">
@@ -332,7 +330,6 @@ export const ChatInput = ({
             )}
             {success && <IconCheck size={20} className="text-green-400" />}
 
-            {/* 聊天输入框 */}
             <textarea
               ref={textareaRef}
               className="flex-1 resize-none border-0 bg-transparent p-0 py-2 pr-8 pl-10 text-black dark:bg-transparent dark:text-white"
@@ -344,7 +341,6 @@ export const ChatInput = ({
               onChange={handleChange}
               onKeyDown={handleKeyDown}
             />
-            {/* 发送按钮 */}
             <button onClick={handleSend} className="p-1 text-neutral-800 dark:text-neutral-100">
               {messageIsStreaming ? (
                 <div className="h-4 w-4 animate-spin rounded-full border-t-2 border-neutral-800 dark:border-neutral-100"></div>
