@@ -67,13 +67,14 @@ export const ChatInput = ({
   const [promptInputValue, setPromptInputValue] = useState('');
   const [variables, setVariables] = useState<string[]>([]);
   const [isModalVisible, setIsModalVisible] = useState(false);
-
+  const [fileUrl, setFileUrl] = useState<string | null>(null);
+  const [fileName, setFileName] = useState<string | null>(null);
   const promptListRef = useRef<HTMLUListElement | null>(null);
-
   // handle file upload + fake progress + API call
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    setFileName(file.name);
     setUploading(true);
     setProgress(0);
     const timer = setInterval(() => {
@@ -89,7 +90,10 @@ export const ChatInput = ({
       });
       clearInterval(timer);
       setProgress(100);
-      if (res.ok) setSuccess(true);
+      if (res.ok) {
+        setSuccess(true);
+        setFileUrl(URL.createObjectURL(file));
+      }
       else throw new Error(`Upload failed ${res.status}`);
     } catch (err) {
       clearInterval(timer);
@@ -99,7 +103,7 @@ export const ChatInput = ({
       setUploading(false);
       setTimeout(() => {
         setProgress(0);
-        setSuccess(false);
+        //setSuccess(false);
       }, 2000);
     }
   };
@@ -320,16 +324,47 @@ export const ChatInput = ({
             </button>
             {uploading && (
               <div className="relative w-6 h-6">
-                <svg className="animate-spin w-6 h-6 text-blue-400" viewBox="0 0 24 24">
-                  {/* ...spinner path... */}
-                </svg>
-                <span className="absolute inset-0 flex items-center justify-center text-xs">
+                <svg className="w-6 h-6" viewBox="0 0 24 24">
+              {/* Background circle */}
+              <circle
+                className="text-gray-300"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+                fill="none"
+              />
+              {/* Progress circle */}
+              <circle
+                className="text-blue-400"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+                fill="none"
+                // For r=10, circumference = 2 * Math.PI * 10 ≈ 62.83
+                strokeDasharray="62.83"
+                strokeDashoffset={62.83 - (progress / 100) * 62.83}
+                style={{ transition: 'stroke-dashoffset 0.2s linear' }}
+              />
+            </svg>
+                {/*<span className="absolute inset-0 flex items-center justify-center text-xs">
                   {Math.round(progress)}%
-                </span>
+                </span>*/}
               </div>
             )}
-            {success && <IconCheck size={20} className="text-green-400" />}
-
+            {success && fileUrl && (
+                <a href={fileUrl} target="_blank" rel="noopener noreferrer">
+                    <img src="/docicon.png" alt="Uploaded File" className="w-6 h-6 rounded" />
+                    <span className="text-xs text-gray-700">{fileName}</span>
+                    <IconCheck size={20} className="text-green-400" />
+                </a>
+            )}
+            {success && !fileUrl && (
+              <IconCheck size={20} className="text-green-400" />
+            )}
             <textarea
               ref={textareaRef}
               className="flex-1 resize-none border-0 bg-transparent p-0 py-2 pr-8 pl-10 text-black dark:bg-transparent dark:text-white"
