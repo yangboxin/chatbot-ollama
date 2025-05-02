@@ -62,7 +62,6 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-
   const handleSend = useCallback(
     async (message: Message, deleteCount = 0 ) => {
       if (selectedConversation) {
@@ -91,7 +90,8 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
         const chatBody: ChatBody = {
           model: updatedConversation.model.name,
           system: updatedConversation.prompt,
-          prompt: updatedConversation.messages.map(message => message.content).join(' '),
+          //prompt: updatedConversation.messages.map(message => message.content).join(' '),
+          prompt: updatedConversation.messages[updatedConversation.messages.length-1].content,
           options: { temperature: updatedConversation.temperature },
         };
         const endpoint = getEndpoint();
