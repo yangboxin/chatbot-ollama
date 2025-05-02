@@ -1,6 +1,8 @@
 import { DEFAULT_SYSTEM_PROMPT, DEFAULT_TEMPERATURE } from '@/utils/app/const';
 import { OllamaError, OllamaStream } from '@/utils/server';
-
+import { NextRequest } from 'next/server';
+import { getToken } from 'next-auth/jwt';
+import type { JWT } from 'next-auth/jwt';
 import { ChatBody, Message } from '@/types/chat';
 
 
@@ -8,8 +10,14 @@ export const config = {
   runtime: 'edge',
 };
 
-const handler = async (req: Request): Promise<Response> => {
+const handler = async (req: NextRequest): Promise<Response> => {
   try {
+    const token = (await getToken({
+      req,
+      secret: process.env.NEXTAUTH_SECRET,
+    })) as JWT & { user?: { id?:string; email?: string } } | null;
+    const uuid = token?.user?.id;
+    const email = token?.user?.email;
     const { model, system, options, prompt } = (await req.json()) as ChatBody;
 
 
@@ -23,7 +31,7 @@ const handler = async (req: Request): Promise<Response> => {
       temperatureToUse = DEFAULT_TEMPERATURE;
     }
 
-    const stream = await OllamaStream (model, promptToSend, temperatureToUse, prompt);
+    const stream = await OllamaStream (model, promptToSend, temperatureToUse, prompt, {uuid, email});
 
     return new Response(stream);
   } catch (error) {
