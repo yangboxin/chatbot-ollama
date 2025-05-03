@@ -358,7 +358,7 @@ export const ChatInput = ({
             {success && fileUrl && (
                 <a href={fileUrl} target="_blank" rel="noopener noreferrer">
                     <img src="/docicon.png" alt="Uploaded File" className="w-6 h-6 rounded" />
-                    <span className="text-xs text-gray-700">{fileName}</span>
+                    <span className="text-xs text-black dark:text-white">{fileName}</span>
                     <IconCheck size={20} className="text-green-400" />
                 </a>
             )}
