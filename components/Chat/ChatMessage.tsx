@@ -28,10 +28,11 @@ import remarkMath from 'remark-math';
 export interface Props {
   message: Message;
   messageIndex: number;
-  onEdit?: (editedMessage: Message) => void
+  onEdit?: (editedMessage: Message) => void;
+  onRetry?: (messageIndex: number) => void;
 }
 
-export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit }) => {
+export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit, onRetry }) => {
   const { t } = useTranslation('chat');
 
   const {
@@ -126,6 +127,51 @@ export const ChatMessage: FC<Props> = memo(({ message, messageIndex, onEdit }) =
     }
   }, [isEditing]);
 
+  // Error bubble: either starts with "Error:" or is a JSON error object
+  if (
+    message.role === 'assistant' &&
+    (message.content.startsWith('Error:') ||
+     message.content.trim().startsWith('{'))
+  ) {
+    let raw = message.content.replace(/^Error:\s*/, '');
+    let text: string;
+    try {
+      const obj = JSON.parse(raw);
+      text = obj.message || obj.error || raw;
+    } catch {
+      text = raw;
+    }
+    return (
+      <div
+        className={`group md:px-4 border-b border-black/10 bg-gray-50/90 text-gray-800
+                    dark:border-gray-900/50 dark:bg-[#444654]/95 dark:text-gray-100`}
+        style={{ overflowWrap: 'anywhere' }}
+      >
+        <div className="relative m-auto flex p-4 text-base md:max-w-2xl md:gap-6 md:py-6 lg:max-w-2xl lg:px-0 xl:max-w-3xl">
+          <div className="min-w-[40px] text-right">
+            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-gradient-to-r from-purple-500/70 to-blue-500/70 text-white">
+              <IconRobot size={20} stroke={2.5} />
+            </div>
+          </div>
+          <div className="w-full flex justify-center">
+            <div className="w-full max-w-md bg-red-50 border border-red-400 rounded-lg p-4 shadow-sm
+                            dark:bg-red-900/20 dark:border-red-600">
+              <p className="text-red-700 font-medium">{text}</p>
+              <button
+                className="mt-3 w-full inline-flex justify-center items-center
+                           px-4 py-2 bg-red-100 text-red-700 rounded hover:bg-red-200
+                           dark:bg-red-800/50 dark:text-red-300 dark:hover:bg-red-700/50
+                           transition"
+                onClick={() => onRetry?.(messageIndex)}
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
   return (
     <div
       className={`group md:px-4 ${

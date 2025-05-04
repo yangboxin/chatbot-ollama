@@ -109,10 +109,22 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
           body,
         });
         if (!response.ok) {
-          homeDispatch({ field: 'loading', value: false });
-          homeDispatch({ field: 'messageIsStreaming', value: false });
-          toast.error(response.statusText);
-          return;
+          const errMsg: Message = {
+            role: 'assistant',
+            content: `Error: ${response.status} ${response.statusText}`,
+          };
+          const updatedMsgs = [
+            ...updatedConversation.messages,
+            errMsg,
+          ];
+          const newConv = { ...updatedConversation, messages: updatedMsgs };
+          homeDispatch({ field: 'selectedConversation', value: newConv });
+          homeDispatch({
+            field: 'conversations',
+            value: conversations.map(c =>
+              c.id === newConv.id ? newConv : c
+            ),
+          });
         }
         const data = response.body;
         if (!data) {
@@ -237,6 +249,15 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
     ],
   );
 
+  const handleRetry = useCallback(
+    (errorIndex: number) => {
+      if (!selectedConversation) return;
+      const prev = selectedConversation.messages[errorIndex -1 ];
+      if(prev?.role!=='user') return;
+      handleSend(prev, 0);
+    },
+    [selectedConversation, handleSend]
+  );
   const scrollToBottom = useCallback(() => {
     if (autoScrollEnabled) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -410,6 +431,7 @@ export const Chat = memo(({ stopConversationRef }: Props) => {
                         selectedConversation?.messages.length - index,
                       );
                     }}
+                    onRetry={handleRetry}
                   />
                 ))}
 
