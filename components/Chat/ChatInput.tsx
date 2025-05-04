@@ -47,7 +47,7 @@ export const ChatInput = ({
   showScrollDownButton,
 }: Props) => {
   const { t } = useTranslation('chat');
-
+  const [chunkStrategy, setChunkStrategy] = useState<'line' | 'paragraph'>('paragraph');
   const {
     state: { selectedConversation, messageIsStreaming, prompts },
 
@@ -84,7 +84,7 @@ export const ChatInput = ({
       const form = new FormData();
       form.append('file', file);
       const id = uuidv4();
-      const res = await fetch(`/api/process/${id}`, {
+      const res = await fetch(`/api/process/${id}?chunk=${chunkStrategy}`, {
         method: 'POST',
         body: form,
       });
@@ -322,6 +322,21 @@ export const ChatInput = ({
             <button onClick={handleFileClick} className="p-1 text-gray-500 hover:text-gray-400">
               <IconFile size={20} />
             </button>
+            <select
+              value={chunkStrategy}
+              onChange={e => setChunkStrategy(e.target.value as any)}
+              className="
+              mr-2 rounded border 
+              bg-white text-black
+              dark:bg-[#40414F] dark:text-white
+              border-gray-300 dark:border-gray-600
+              px-2 py-1 text-sm
+              focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-300"
+            >
+              <option value="line">by line</option>
+              <option value="paragraph">by paragraph</option>
+            </select>
+
             {uploading && (
               <div className="relative w-6 h-6">
                 <svg className="w-6 h-6" viewBox="0 0 24 24">
@@ -347,7 +362,7 @@ export const ChatInput = ({
                 // For r=10, circumference = 2 * Math.PI * 10 ≈ 62.83
                 strokeDasharray="62.83"
                 strokeDashoffset={62.83 - (progress / 100) * 62.83}
-                style={{ transition: 'stroke-dashoffset 0.2s linear' }}
+                style={{ transition: 'stroke-dashoffset 1.25s linear' }}
               />
             </svg>
                 {/*<span className="absolute inset-0 flex items-center justify-center text-xs">
@@ -387,7 +402,7 @@ export const ChatInput = ({
         </div>
         <div className="px-3 pt-2 pb-3 text-center text-[12px] text-black/50 dark:text-white/50 md:px-4 md:pt-3 md:pb-6">
           <a
-            href="https://github.com/ivanfioravanti/chatbot-ollama"
+            href="https://github.com/yangboxin/chatbot-ollama"
             target="_blank"
             rel="noreferrer"
             className="underline hover:text-black/70 dark:hover:text-white/70 transition-colors duration-200"

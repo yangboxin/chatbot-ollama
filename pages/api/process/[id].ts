@@ -3,6 +3,8 @@ import { IncomingForm, Files, File as FormidableFile } from 'formidable';
 import fs from 'fs';
 import fetch from 'node-fetch';
 import FormData from 'form-data';
+import { Client } from 'minio';
+import Redis from 'ioredis';
 
 export const config = {
   api: {
@@ -14,7 +16,7 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const { id } = req.query as { id: string };
+  const { id, chunk } = req.query as { id: string; chunk?: string };
 
   if (req.method !== 'POST') {
     res.setHeader('Allow', 'POST');
@@ -44,31 +46,33 @@ export default async function handler(
 
     const buffer = fs.readFileSync(file.filepath);
     fs.unlinkSync(file.filepath);
-
-    const upstreamForm = new FormData();
-    upstreamForm.append(
-      'file',
-      buffer,
-      {
-        filename: file.originalFilename || 'upload.pdf',
-        contentType: file.mimetype || 'application/pdf',
+    const endpoint = process.env.MINIO_ENDPOINT;
+      if(!endpoint){
+        throw new Error('MINIO_ENDPOINT not set');
       }
-    );
-
-    const processorUrl = process.env.DOCUMENT_PROCESSOR_URL;
-    if (!processorUrl) {
-      throw new Error('DOCUMENT_PROCESSOR_URL not set');
-    }
-
-
-    const upstream = await fetch(`${processorUrl}/process/${id}`, {
-      method: 'POST',
-      headers: upstreamForm.getHeaders(),
-      body: upstreamForm,
+    const minioClient = new Client({
+      endPoint: endpoint,
+      accessKey: process.env.MINIO_ACCESS_KEY,
+      secretKey: process.env.MINIO_SECRET_KEY,
     });
+    const bucket = process.env.MINIO_BUCKET_NAME;
+    if (!bucket) {
+      throw new Error('MINIO_BUCKET_NAME not set');
+    }
+    const objectName = `${id}`;
+    await minioClient.putObject(bucket, objectName, buffer, buffer.length, {'Content-Type': file.mimetype || 'application/pdf'});
 
-    const json = await upstream.json();
-    return res.status(upstream.status).json(json);
+    const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+    const queueName = process.env.REDIS_QUEUE_NAME || 'document-processor';
+    const redis = new Redis(redisUrl);
+    const task = {
+      chunk: chunk || 'paragraph',
+      objectName: `${id}`,
+    }
+    await redis.lpush(queueName, JSON.stringify(task));
+    const items = await redis.lrange(queueName, 0, 5);
+    console.log('Redis queue:', items); 
+    return res.status(200).json({ enqueued: true, queue: queueName, task });
   } catch (error: any) {
     console.error('Process handler error:', error);
     return res
