@@ -35,12 +35,17 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
+    <div className="relative min-h-screen flex items-start justify-center bg-white pt-40">
+      {/* dRAGon brand sign */}
+      <div className="absolute top-4 left-4 text-2xl font-bold">
+        dRAGon
+      </div>
+
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-md bg-white dark:bg-[#343541] p-6 rounded-lg shadow"
+        className="w-full max-w-md dark:bg-[#343541] p-6 border-none rounded-lg shadow-none"
       >
-        <h2 className="text-2xl font-bold text-center text-green-600 mb-6">
+        <h2 className="text-2xl font-bold text-center mb-6">
           Sign In
         </h2>
         {error && <p className="text-red-500 text-center mb-4">{error}</p>}
@@ -86,14 +91,14 @@ export default function SignInPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded disabled:opacity-50"
+          className="w-full py-2 bg-[#10a37f] hover:bg-[#117f67] text-white font-semibold rounded disabled:opacity-50 shadow hover:shadow-lg transition-shadow duration-200"
         >
           {loading ? "Signing in..." : "Sign In"}
         </button>
 
         <p className="text-sm text-center mt-4 text-gray-600 dark:text-gray-400">
           Don’t have an account?{" "}
-          <Link href="/signup" className="text-green-600 hover:underline">
+          <Link href="/signup" className="text-[#139373] hover:underline">
             Sign up
           </Link>
         </p>

@@ -34,12 +34,16 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
+    <div className="relative min-h-screen flex items-start justify-center bg-white pt-40">
+      <div className="absolute top-4 left-4 text-2xl font-bold">
+        dRAGon
+      </div>
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-md bg-white dark:bg-[#343541] p-6 rounded-lg shadow"
+        className="w-full max-w-md bg-white dark:bg-[#343541] p-6 rounded-lg shadow-none border-none"
       >
-        <h2 className="text-2xl font-bold text-center text-green-600 mb-4">Sign Up</h2>
+        
+        <h2 className="text-2xl font-bold text-center text mb-4">Sign Up</h2>
         {error && <p className="text-red-500 text-center mb-3">{error}</p>}
 
         {["name","email","password","confirmPassword"].map(field => (
@@ -78,14 +82,14 @@ export default function SignupPage() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded disabled:opacity-50"
+          className="w-full py-2 bg-[#10a37f] hover:bg-[#117f67] text-white font-semibold rounded disabled:opacity-50"
         >
           {loading ? "Creating account..." : "Create Account"}
         </button>
 
         <p className="text-sm text-center mt-4 text-gray-600 dark:text-gray-400">
           Already have an account?{" "}
-          <a href="/signin" className="text-green-600 hover:underline">
+          <a href="/signin" className="text-[#10a37f] hover:[#117f67]">
             Log in here
           </a>
         </p>
